@@ -2,6 +2,7 @@
 #include <iostream>
 #include <windows.h>
 #include <clocale>
+#include <vector>
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
@@ -26,25 +27,94 @@ int main() {
         int id3 = manager.add_client("John", "Smith", "john@email.com");
 
         std::cout << "\nStep 3: Adding phones\n";
-        if (id1 != -1) manager.add_phone(id1, "+7-123-456-78-90");
-        if (id1 != -1) manager.add_phone(id1, "+7-098-765-43-21");
-        if (id2 != -1) manager.add_phone(id2, "+7-555-123-45-67");
+        try {
+            manager.add_phone(id1, "+7-123-456-78-90");
+            manager.add_phone(id1, "+7-098-765-43-21");
+            manager.add_phone(id2, "+7-555-123-45-67");
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Ошибка при добавлении телефона: " << e.what() << std::endl;
+        }
 
         std::cout << "\nStep 4: Searching clients\n";
-        if (id1 != -1) manager.find_client("Ivan");
-        if (id2 != -1) manager.find_client("+7-555");
-        manager.find_client("@email");
+
+        std::cout << "----------------------------------------\n";
+        auto clients1 = manager.find_client("Ivan");
+        for (const auto& client : clients1) {
+            std::cout << "ID: " << client.id << "\n";
+            std::cout << "Имя: " << client.first_name << " " << client.last_name << "\n";
+            std::cout << "Email: " << client.email << "\n";
+            if (!client.phones.empty()) {
+                std::cout << "Телефоны: ";
+                for (size_t i = 0; i < client.phones.size(); ++i) {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << client.phones[i];
+                }
+                std::cout << "\n";
+            }
+            else {
+                std::cout << "Телефоны: не указаны\n";
+            }
+            std::cout << "----------------------------------------\n";
+        }
+
+      
+        std::cout << "----------------------------------------\n";
+        auto clients2 = manager.find_client("555");
+        for (const auto& client : clients2) {
+            std::cout << "ID: " << client.id << "\n";
+            std::cout << "Имя: " << client.first_name << " " << client.last_name << "\n";
+            std::cout << "Email: " << client.email << "\n";
+            if (!client.phones.empty()) {
+                std::cout << "Телефоны: ";
+                for (size_t i = 0; i < client.phones.size(); ++i) {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << client.phones[i];
+                }
+                std::cout << "\n";
+            }
+            else {
+                std::cout << "Телефоны: не указаны\n";
+            }
+            std::cout << "----------------------------------------\n";
+        }
+
+       
+        std::cout << "----------------------------------------\n";
+        auto clients3 = manager.find_client("email");
+        for (const auto& client : clients3) {
+            std::cout << "ID: " << client.id << "\n";
+            std::cout << "Имя: " << client.first_name << " " << client.last_name << "\n";
+            std::cout << "Email: " << client.email << "\n";
+            if (!client.phones.empty()) {
+                std::cout << "Телефоны: ";
+                for (size_t i = 0; i < client.phones.size(); ++i) {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << client.phones[i];
+                }
+                std::cout << "\n";
+            }
+            else {
+                std::cout << "Телефоны: не указаны\n";
+            }
+            std::cout << "----------------------------------------\n";
+        }
 
         std::cout << "\nStep 5: Updating client data\n";
-        if (id2 != -1) manager.update_client(id2, "Maria", "Petrova", "");
+        manager.update_client(id2, "Maria", "Petrova", "");
 
         std::cout << "\nStep 6: Deleting phone\n";
-        if (id1 != -1) manager.delete_phone(id1, "+7-098-765-43-21");
+        manager.delete_phone(id1, "+7-098-765-43-21");
 
         std::cout << "\nStep 7: Deleting client\n";
-        if (id3 != -1) manager.delete_client(id3);
+        manager.delete_client(id3);
 
         std::cout << "\nAll operations completed successfully!\n";
+    }
+    catch (const pqxx::sql_error& e) {
+        std::cerr << "SQL Error: " << e.what() << std::endl;
+        std::cerr << "Query: " << e.query() << std::endl;
+        return 1;
     }
     catch (const std::exception& e) {
         std::cerr << "Critical error: " << e.what() << std::endl;
